@@ -63,6 +63,8 @@ def get_networks(client: docker.DockerClient, verbose: bool) -> typing.Dict[str,
 
     for net in sorted(client.networks.list(), key=lambda k: k.name):
         try:
+            if net.attrs["Name"] in ["none", "host", "bridge"]:
+                continue
             gateway = net.attrs["IPAM"]["Config"][0]["Subnet"]
         except (KeyError, IndexError):
             # This network doesn't seem to be used, skip it
@@ -88,7 +90,7 @@ def get_networks(client: docker.DockerClient, verbose: bool) -> typing.Dict[str,
         color = get_unique_color()
         networks[net.name] = Network(net.name, gateway, internal, isolated, color)
 
-    networks["host"] = Network("host", "0.0.0.0", False, False, "#808080")
+    # networks["host"] = Network("host", "0.0.0.0", False, False, "#808080")
 
     return networks
 
